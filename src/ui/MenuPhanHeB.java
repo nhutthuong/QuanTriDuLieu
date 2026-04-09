@@ -22,10 +22,9 @@ public class MenuPhanHeB {
             System.out.println("6. Nhập / cập nhật điểm thi");
             System.out.println("7. Xem bảng điểm chi tiết");
             System.out.println("8. Tính Điểm trung bình - GPA");
-            System.out.println("9. Giám sát sửa điểm");
-            System.out.println("10. Lọc sinh viên Xuất sắc / Cảnh báo");
+            System.out.println("9. Lọc sinh viên Xuất sắc / Cảnh báo");
             System.out.println("0. Quay lại Menu Chính");
-            System.out.print("--> Chọn chức năng (0-7): ");
+            System.out.print("--> Chọn chức năng (0-9): ");
 
             String luaChon = scanner.nextLine();
 
@@ -34,10 +33,10 @@ public class MenuPhanHeB {
             		xuLyThemHocPhan(scanner);
             		break;
                 case "2":
-                	
+                	xuLySuaHocPhan(scanner);
                     break;
                 case "3":
-                	
+                	xuLyXoaHocPhan(scanner);
                     break;
                 case "4":
                 	xuLyDangKyHocPhan(scanner);
@@ -49,16 +48,13 @@ public class MenuPhanHeB {
                 	xuLyNhapDiem(scanner);
                 	break;
                 case "7":
-    
+                    xuLyXemBangDiem(scanner);
                 	break;
                 case "8":
-                    
+                    xuLyTinhGPA(scanner);
                 	break;
                 case "9":
-                    
-                	break;
-                case "10":
-    
+                     xuLyLocHocLuc(scanner);
                 	break;
                 case "0":
                     return; // Về menu chính
@@ -226,6 +222,142 @@ public class MenuPhanHeB {
 
         } catch (NumberFormatException ex) {
             System.out.println("LỖI: Dữ liệu nhập vào không hợp lệ. Số tín chỉ và số tiết phải là số nguyên!");
+        }
+    }
+    // ham xu ly sua hoc phan
+    private void xuLySuaHocPhan(Scanner scanner) {
+        System.out.println("\n--- CHỨC NĂNG SỬA THÔNG TIN HỌC PHẦN ---");
+        System.out.print("Nhập Mã Học Phần cần sửa: ");
+        String maHP = scanner.nextLine().trim();
+
+        try {
+      
+            System.out.print("Tên Học Phần mới: ");
+            String tenHP = scanner.nextLine().trim();
+            System.out.print("Số tín chỉ mới: ");
+            int stc = Integer.parseInt(scanner.nextLine());
+            System.out.print("Số tiết LT mới: ");
+            int lt = Integer.parseInt(scanner.nextLine());
+            System.out.print("Số tiết TH mới: ");
+            int th = Integer.parseInt(scanner.nextLine());
+
+     
+            HocPhan hp = new HocPhan(maHP, tenHP, stc, lt, th);
+
+    
+            if (hocPhanDAO.capNhatHocPhan(hp)) {
+                System.out.println(">> THÀNH CÔNG: Đã cập nhật thông tin học phần " + maHP);
+            } else {
+                System.out.println(">> THẤT BẠI: Không tìm thấy Mã Học Phần này trong hệ thống.");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println(">> LỖI: Số tín chỉ và số tiết phải là con số!");
+        }
+    }
+    // ham xu ly xoa hoc phan
+    private void xuLyXoaHocPhan(Scanner scanner) {
+        System.out.println("\n--- CHỨC NĂNG XÓA HỌC PHẦN ---");
+        System.out.print("Nhập Mã Học Phần muốn xóa: ");
+        String maHP = scanner.nextLine().trim().toUpperCase();
+
+        if (maHP.isEmpty()) {
+            System.out.println(">> Lỗi: Mã học phần không được để trống!");
+            return;
+        }
+
+        System.out.print("Bạn có chắc chắn muốn xóa học phần " + maHP + "? (y/n): ");
+        if (scanner.nextLine().equalsIgnoreCase("y")) {
+            // Gọi DAO thực thi
+            int kq = hocPhanDAO.xoaHocPhan(maHP);
+
+            switch (kq) {
+                case 1:
+                    System.out.println(">> THÀNH CÔNG: Đã xóa học phần khỏi danh mục.");
+                    break;
+                case 0:
+                    System.out.println(">> THẤT BẠI: Không tìm thấy học phần có mã " + maHP);
+                    break;
+                case -2:
+                    System.out.println(">> CẢNH BÁO: Không thể xóa! Học phần này đã có sinh viên đăng ký học.");
+                    break;
+                default:
+                    System.out.println(">> LỖI: Có lỗi hệ thống xảy ra.");
+                    break;
+            }
+        } else {
+            System.out.println(">> Đã hủy thao tác xóa.");
+        }
+    }
+    // ham xu ly them bang diem
+    private void xuLyXemBangDiem(Scanner scanner) {
+        System.out.println("\n--- XEM BẢNG ĐIỂM CHI TIẾT ---");
+        System.out.print("Nhập MSSV cần xem: ");
+        String mssv = scanner.nextLine().trim();
+
+        List<String[]> bangDiem = dangKyDAO.layBangDiemChiTiet(mssv);
+
+        if (bangDiem.isEmpty()) {
+            System.out.println(">> Thông báo: Sinh viên này chưa đăng ký học phần nào hoặc không tồn tại.");
+        } else {
+            System.out.println("\nBẢNG ĐIỂM CỦA SINH VIÊN: " + mssv);
+            System.out.println("-------------------------------------------------------------------------------");
+            System.out.println(String.format("%-10s | %-30s | %-5s | %-10s | %-5s", 
+                "Mã HP", "Tên Học Phần", "STC", "Học Kỳ", "Điểm"));
+            System.out.println("-------------------------------------------------------------------------------");
+            
+            for (String[] row : bangDiem) {
+                System.out.println(String.format("%-10s | %-30s | %-5s | %-10s | %-5s", 
+                    row[0], row[1], row[2], row[3], row[4]));
+            }
+            System.out.println("-------------------------------------------------------------------------------");
+        }
+    }
+    // ham xu ly xu ly tinh GPA
+    private void xuLyTinhGPA(Scanner scanner) {
+        System.out.println("\n--- TÍNH ĐIỂM TRUNG BÌNH TÍCH LŨY (GPA) ---");
+        System.out.print("Nhập MSSV cần tính GPA: ");
+        String mssv = scanner.nextLine().trim();
+
+        float gpa = dangKyDAO.tinhGPASinhVien(mssv);
+
+        System.out.println("==========================================");
+        System.out.println(">> SINH VIÊN: " + mssv);
+        System.out.println(String.format(">> ĐIỂM GPA HỆ 10: %.2f", gpa));
+        
+        // Xếp loại nhanh dựa trên GPA
+        if (gpa >= 9.0) System.out.println(">> XẾP LOẠI: Xuất sắc");
+        else if (gpa >= 8.0) System.out.println(">> XẾP LOẠI: Giỏi");
+        else if (gpa >= 7.0) System.out.println(">> XẾP LOẠI: Khá");
+        else if (gpa >= 5.0) System.out.println(">> XẾP LOẠI: Trung bình");
+        else if (gpa > 0) System.out.println(">> XẾP LOẠI: Yếu/Kém");
+        else System.out.println(">> CHƯA CÓ DỮ LIỆU ĐIỂM");
+        System.out.println("==========================================");
+    }
+    // ham xu ly hoc luc
+    private void xuLyLocHocLuc(Scanner scanner) {
+        System.out.println("\n--- LỌC SINH VIÊN THEO HỌC LỰC ---");
+        System.out.println("1. Danh sách KHEN THƯỞNG (GPA >= 8.0)");
+        System.out.println("2. Danh sách CẢNH BÁO (GPA < 4.0)");
+        System.out.print("Chọn loại danh sách (1-2): ");
+        String chon = scanner.nextLine();
+        
+        String loai = chon.equals("1") ? "KHENTHUONG" : "CANHBAO";
+        String tieuDe = chon.equals("1") ? "DANH SÁCH KHEN THƯỞNG" : "DANH SÁCH CẢNH BÁO HỌC VỤ";
+
+        List<String[]> ds = dangKyDAO.locSinhVienTheoHocLuc(loai);
+
+        if (ds.isEmpty()) {
+            System.out.println(">> Hiện tại không có sinh viên nào thuộc diện này.");
+        } else {
+            System.out.println("\n" + tieuDe);
+            System.out.println("------------------------------------------------------------");
+            System.out.println(String.format("%-10s | %-20s | %-10s | %-5s", "MSSV", "Họ Tên", "Mã Khoa", "GPA"));
+            System.out.println("------------------------------------------------------------");
+            for (String[] row : ds) {
+                System.out.println(String.format("%-10s | %-20s | %-10s | %-5s", row[0], row[1], row[2], row[3]));
+            }
+            System.out.println("------------------------------------------------------------");
+            System.out.println("Tổng cộng: " + ds.size() + " sinh viên.");
         }
     }
 }

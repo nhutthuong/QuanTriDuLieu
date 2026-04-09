@@ -58,12 +58,15 @@ public class MenuPhanHeA {
                     }
                     break;
                 case "4":
+                    xuLySuaSinhVien(scanner);
                     System.out.println("Đang gọi chức năng sửa thông tin...");
                     break;
                 case "5":
+                    xuLyXoaSinhVien(scanner);
                 	System.out.println("Đang gọi chức năng xóa và lưu trữ sinh viên...");
                     break;
                 case "6":
+                    xuLyThemSinhVien(scanner);
                     System.out.println("Đang gọi Stored Procedure thêm sinh viên...");
                     break;
                 case "0":
@@ -105,5 +108,98 @@ public class MenuPhanHeA {
         }
         System.out.println("----------------------------------------------------------");
         System.out.println(">> Tổng cộng: " + list.size() + " khoa.");
+    }
+    private void xuLySuaSinhVien(Scanner scanner) {
+        System.out.println("\n--- CHỨC NĂNG SỬA THÔNG TIN SINH VIÊN ---");
+        System.out.print("Nhập MSSV cần sửa: ");
+        String mssv = scanner.nextLine();
+
+        List<SinhVien> ds = sinhVienDAO.timKiemSinhVien(mssv);
+        if (ds.isEmpty()) {
+            System.out.println(">> Lỗi: Không tìm thấy sinh viên mã " + mssv);
+            return;
+        }
+
+        SinhVien sv = ds.get(0);
+        System.out.println("Đang sửa SV: " + sv.getHoTen());
+
+        try {
+            System.out.print("Họ tên mới: "); sv.setHoTen(scanner.nextLine());
+            System.out.print("Phái mới (M/F): "); sv.setGioiTinh(scanner.nextLine());
+            System.out.print("Ngày sinh mới (yyyy-mm-dd): "); 
+            sv.setNgaySinh(java.sql.Date.valueOf(scanner.nextLine()));
+            System.out.print("Nơi sinh mới: "); sv.setNoiSinh(scanner.nextLine());
+            System.out.print("Địa chỉ mới: "); sv.setDiaChi(scanner.nextLine());
+            System.out.print("Mã khoa mới: "); sv.setMaKhoa(scanner.nextLine());
+
+            if (sinhVienDAO.capNhatSinhVien(sv)) {
+                System.out.println(">> THÀNH CÔNG: Đã cập nhật thông tin mới.");
+            } else {
+                System.out.println(">> THẤT BẠI: Cập nhật không thành công.");
+            }
+        } catch (Exception e) {
+            System.out.println(">> LỖI: Định dạng dữ liệu không hợp lệ (VD: Ngày sinh phải là yyyy-mm-dd)");
+        }
+    }
+    // --- HÀM XỬ LÝ XÓA & LƯU TRỮ SINH VIÊN (Chức năng 5) ---
+    private void xuLyXoaSinhVien(Scanner scanner) {
+        System.out.println("\n--- CHỨC NĂNG XÓA & LƯU TRỮ SINH VIÊN (TRANSACTION) ---");
+        
+
+        System.out.print("Nhập MSSV muốn xóa: ");
+        String mssv = scanner.nextLine().trim();
+
+        if (mssv.isEmpty()) {
+            System.out.println(">> Lỗi: MSSV không được để trống!");
+            return;
+        }
+
+      
+        System.out.print("Hệ thống sẽ chuyển SV này sang bảng LƯU TRỮ và xóa khỏi danh sách chính. Xác nhận? (y/n): ");
+        String xacNhan = scanner.nextLine();
+
+        if (xacNhan.equalsIgnoreCase("y")) {
+
+            int ketQua = sinhVienDAO.xoaSinhVienTransaction(mssv);
+
+            if (ketQua == 1) {
+                System.out.println("=======================================================");
+                System.out.println(">> THÀNH CÔNG: Sinh viên " + mssv + " đã được chuyển vào kho lưu trữ.");
+                System.out.println("=======================================================");
+            } else if (ketQua == 0) {
+                System.out.println(">> THẤT BẠI: Không tìm thấy sinh viên mã " + mssv + " trong hệ thống.");
+            } else {
+                System.out.println(">> LỖI: Có lỗi Transaction xảy ra. Dữ liệu vẫn được giữ an toàn (Rollback).");
+            }
+        } else {
+            System.out.println(">> Đã hủy thao tác xóa.");
+        }
+    }
+
+        private void xuLyThemSinhVien(Scanner scanner) {
+        System.out.println("\n--- CHỨC NĂNG THÊM SINH VIÊN (HỌ TÊN TỰ ĐỘNG VIẾT HOA) ---");
+        try {
+            SinhVien sv = new SinhVien();
+            System.out.print("Nhập MSSV: "); sv.setMssv(scanner.nextLine().trim());
+            System.out.print("Nhập Họ tên (ví dụ: nguyen minh thai): "); sv.setHoTen(scanner.nextLine().trim());
+            System.out.print("Phái (M/F): "); sv.setGioiTinh(scanner.nextLine().trim().toUpperCase());
+            System.out.print("Ngày sinh (yyyy-mm-dd): "); 
+            sv.setNgaySinh(java.sql.Date.valueOf(scanner.nextLine().trim()));
+            System.out.print("Nơi sinh: "); sv.setNoiSinh(scanner.nextLine().trim());
+            System.out.print("Địa chỉ: "); sv.setDiaChi(scanner.nextLine().trim());
+            System.out.print("Mã khoa: "); sv.setMaKhoa(scanner.nextLine().trim().toUpperCase());
+
+            int kq = sinhVienDAO.themSinhVien(sv);
+
+            if (kq == 1) {
+                System.out.println(">> THÀNH CÔNG: Sinh viên đã được thêm. Hãy dùng chức năng 1 để kiểm tra Họ tên.");
+            } else if (kq == 0) {
+                System.out.println(">> THẤT BẠI: Mã số sinh viên này đã tồn tại!");
+            } else {
+                System.out.println(">> LỖI: Không thể thêm sinh viên.");
+            }
+        } catch (Exception e) {
+            System.out.println(">> LỖI: Dữ liệu nhập không đúng định dạng (Ngày sinh phải là yyyy-mm-dd).");
+        }
     }
 }

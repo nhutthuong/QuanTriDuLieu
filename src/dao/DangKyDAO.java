@@ -4,8 +4,10 @@ import util.MySQLConnect;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DangKyDAO {
@@ -147,4 +149,86 @@ public class DangKyDAO {
         
         return ketQua;
     }
+    public List<String[]> layBangDiemChiTiet(String mssv) {
+    List<String[]> danhSachDiem = new ArrayList<>();
+    Connection conn = null;
+    CallableStatement cStmt = null;
+    ResultSet rs = null;
+
+    try {
+        conn = util.MySQLConnect.getConnection();
+        String sql = "{call sp_XemBangDiemChiTiet(?)}";
+        cStmt = conn.prepareCall(sql);
+        cStmt.setString(1, mssv);
+        
+        rs = cStmt.executeQuery();
+        while (rs.next()) {
+            String[] dong = new String[5];
+            dong[0] = rs.getString("MaHP");
+            dong[1] = rs.getString("TenHP");
+            dong[2] = rs.getString("SoTinChi");
+            dong[3] = rs.getString("MaHK");
+            dong[4] = rs.getString("Diem") == null ? "Chưa có" : rs.getString("Diem");
+            danhSachDiem.add(dong);
+        }
+    } catch (SQLException ex) {
+        ex.printStackTrace();
+    } finally {
+        // Đóng kết nối (tương tự các hàm trước)
+    }
+    return danhSachDiem;
+}
+    public float tinhGPASinhVien(String mssv) {
+    float gpa = 0;
+    Connection conn = null;
+    CallableStatement cStmt = null;
+
+    try {
+        conn = util.MySQLConnect.getConnection();
+        String sql = "{? = call fn_TinhGPA(?)}";
+        cStmt = conn.prepareCall(sql);
+
+        // Đăng ký tham số trả về (Vị trí số 1)
+        cStmt.registerOutParameter(1, java.sql.Types.FLOAT);
+        // Truyền tham số đầu vào MSSV (Vị trí số 2)
+        cStmt.setString(2, mssv);
+
+        cStmt.execute();
+        gpa = cStmt.getFloat(1);
+
+    } catch (SQLException ex) {
+        System.out.println("Lỗi JDBC Tính GPA: " + ex.getMessage());
+    } finally {
+        // Đóng kết nối như bình thường
+    }
+    return gpa;
+}
+    public List<String[]> locSinhVienTheoHocLuc(String loai) {
+    List<String[]> danhSach = new ArrayList<>();
+    Connection conn = null;
+    CallableStatement cStmt = null;
+    ResultSet rs = null;
+
+    try {
+        conn = util.MySQLConnect.getConnection();
+        String sql = "{call sp_LocSinhVienTheoHocLuc(?)}";
+        cStmt = conn.prepareCall(sql);
+        cStmt.setString(1, loai);
+        
+        rs = cStmt.executeQuery();
+        while (rs.next()) {
+            String[] sv = new String[4];
+            sv[0] = rs.getString("MSSV");
+            sv[1] = rs.getString("HoTen");
+            sv[2] = rs.getString("MaKhoa");
+            sv[3] = String.format("%.2f", rs.getFloat("GPA"));
+            danhSach.add(sv);
+        }
+    } catch (SQLException ex) {
+        ex.printStackTrace();
+    } finally {
+        // Đóng kết nối
+    }
+    return danhSach;
+}
 }

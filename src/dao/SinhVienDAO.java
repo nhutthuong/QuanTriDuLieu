@@ -191,4 +191,88 @@ public class SinhVienDAO {
         }
         return ds;
     }
+    public boolean capNhatSinhVien(SinhVien sv) {
+    String sql = "{call sp_CapNhatSinhVien(?,?,?,?,?,?,?,?)}";
+    try (Connection conn = MySQLConnect.getConnection();
+         CallableStatement cstmt = conn.prepareCall(sql)) {
+        
+        cstmt.setString(1, sv.getMssv());
+        cstmt.setString(2, sv.getHoTen());
+        cstmt.setString(3, sv.getGioiTinh());
+        cstmt.setDate(4, new java.sql.Date(sv.getNgaySinh().getTime()));
+        cstmt.setString(5, sv.getNoiSinh());
+        cstmt.setString(6, sv.getDiaChi());
+        cstmt.setString(7, sv.getMaKhoa());
+        
+        cstmt.registerOutParameter(8, java.sql.Types.INTEGER);
+        
+        cstmt.execute();
+        return cstmt.getInt(8) == 1;
+        
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+    public int xoaSinhVienTransaction(String mssv) {
+    Connection conn = null;
+    CallableStatement cStmt = null;
+    int ketQua = 0;
+
+    try {
+        conn = util.MySQLConnect.getConnection();
+        String sql = "{call sp_XoaSinhVienTransaction(?, ?)}";
+        cStmt = conn.prepareCall(sql);
+
+        cStmt.setString(1, mssv);
+        cStmt.registerOutParameter(2, java.sql.Types.INTEGER);
+
+        cStmt.execute();
+        ketQua = cStmt.getInt(2);
+
+    } catch (SQLException ex) {
+        System.out.println("Lỗi JDBC Xóa: " + ex.getMessage());
+        ketQua = -1;
+    } finally {
+        try {
+            if (cStmt != null) cStmt.close();
+            if (conn != null) conn.close();
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
+    return ketQua;
+}   
+    public int themSinhVien(SinhVien sv) {
+    Connection conn = null;
+    CallableStatement cStmt = null;
+    int ketQua = 0;
+
+    try {
+        conn = util.MySQLConnect.getConnection();
+        String sql = "{call sp_ThemSinhVienHoaChuDau(?,?,?,?,?,?,?,?)}";
+        cStmt = conn.prepareCall(sql);
+
+        cStmt.setString(1, sv.getMssv());
+        cStmt.setString(2, sv.getHoTen());
+        cStmt.setString(3, sv.getGioiTinh());
+        cStmt.setDate(4, new java.sql.Date(sv.getNgaySinh().getTime()));
+        cStmt.setString(5, sv.getNoiSinh());
+        cStmt.setString(6, sv.getDiaChi());
+        cStmt.setString(7, sv.getMaKhoa());
+        
+        cStmt.registerOutParameter(8, java.sql.Types.INTEGER);
+
+        cStmt.execute();
+        ketQua = cStmt.getInt(8);
+
+    } catch (SQLException ex) {
+        System.out.println("Lỗi JDBC Thêm: " + ex.getMessage());
+        ketQua = -1;
+    } finally {
+        try {
+            if (cStmt != null) cStmt.close();
+            if (conn != null) conn.close();
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
+    return ketQua;
+}
 }
