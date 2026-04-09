@@ -149,6 +149,7 @@ public class DangKyDAO {
         
         return ketQua;
     }
+    
     public List<String[]> layBangDiemChiTiet(String mssv) {
     List<String[]> danhSachDiem = new ArrayList<>();
     Connection conn = null;
@@ -167,7 +168,7 @@ public class DangKyDAO {
             dong[0] = rs.getString("MaHP");
             dong[1] = rs.getString("TenHP");
             dong[2] = rs.getString("SoTinChi");
-            dong[3] = rs.getString("MaHK");
+            dong[3] = rs.getString("MaHK_NK");
             dong[4] = rs.getString("Diem") == null ? "Chưa có" : rs.getString("Diem");
             danhSachDiem.add(dong);
         }

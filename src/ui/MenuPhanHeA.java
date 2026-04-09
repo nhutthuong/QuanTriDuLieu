@@ -40,7 +40,7 @@ public class MenuPhanHeA {
                     inBangKhoa(dsKhoa);
                     break;
                 case "3":
-                	System.out.print("Nhập Mã Khoa cần thống kê (VD: cntt&tt): ");
+                	System.out.print("Nhập Mã Khoa cần thống kê (VD: attt): ");
                     String maKhoa = scanner.nextLine();
                     
                     // Gọi Function để lấy con số tổng
@@ -59,15 +59,12 @@ public class MenuPhanHeA {
                     break;
                 case "4":
                     xuLySuaSinhVien(scanner);
-                    System.out.println("Đang gọi chức năng sửa thông tin...");
                     break;
                 case "5":
                     xuLyXoaSinhVien(scanner);
-                	System.out.println("Đang gọi chức năng xóa và lưu trữ sinh viên...");
                     break;
                 case "6":
-                    xuLyThemSinhVien(scanner);
-                    System.out.println("Đang gọi Stored Procedure thêm sinh viên...");
+                    xuLyThemSinhVien(scanner); 
                     break;
                 case "0":
                     return; // Thoát khỏi vòng lặp này, quay về ConsoleApp

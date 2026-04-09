@@ -19,7 +19,7 @@ public class MySQLConnect {
             // Tạo chuỗi nối kết và khởi tạo đối tượng Connection
             conn = DriverManager.getConnection(DB_URL, USER_NAME, PASSWORD);
             
-            System.out.println("Nối kết thành công!");
+            //System.out.println("Nối kết thành công!");
         } catch (Exception ex) {
             System.out.println("Nối kết không thành công!");
             ex.printStackTrace();
