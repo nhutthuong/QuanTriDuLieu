@@ -132,13 +132,13 @@ public class DangKyDAO {
             cStmt.setString(2, maHP);
             cStmt.setString(3, maHK);
 
-            // Đăng ký tham số nhận kết quả trả về
+       
             cStmt.registerOutParameter(4, java.sql.Types.INTEGER);
 
-            // Thực thi
+          
             cStmt.execute();
 
-            // Lấy mã kết quả từ tham số OUT thứ 4
+      
             ketQua = cStmt.getInt(4);
 
         } catch (SQLException ex) {
@@ -158,7 +158,7 @@ public class DangKyDAO {
     }
 
     public List<String[]> layBangDiemChiTiet(String mssv) {
-        List<String[]> danhSachDiem = new ArrayList<>(); // Thêm <> cho đúng chuẩn Generic
+        List<String[]> danhSachDiem = new ArrayList<>(); 
         Connection conn = null;
         CallableStatement cStmt = null;
         ResultSet rs = null;
@@ -171,14 +171,14 @@ public class DangKyDAO {
             rs = cStmt.executeQuery();
 
             while(rs.next()) {
-                // Bước 1: Giảm xuống 4 vì Procedure chỉ trả về 4 cột
+                
                 String[] dong = new String[4]; 
                 
                 dong[0] = rs.getString("MaHP");
                 dong[1] = rs.getString("TenHP");
                 dong[2] = rs.getString("SoTinChi");
                 
-                // Bước 2: Bỏ MaHK_NK và lấy thẳng cột Diem vào vị trí số 3
+    
                 dong[3] = rs.getString("Diem") == null ? "Chưa có" : rs.getString("Diem");
                 
                 danhSachDiem.add(dong);
@@ -186,7 +186,7 @@ public class DangKyDAO {
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
-            // Bước 3: Đừng quên đóng kết nối để tránh bị tràn bộ nhớ Database
+            
             try {
                 if (rs != null) rs.close();
                 if (cStmt != null) cStmt.close();

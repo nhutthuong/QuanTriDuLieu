@@ -67,7 +67,7 @@ public class MenuPhanHeA {
                     xuLyThemSinhVien(scanner); 
                     break;
                 case "0":
-                    return; // Thoát khỏi vòng lặp này, quay về ConsoleApp
+                    return; 
                 default:
                     System.out.println("Lựa chọn không hợp lệ!");
             }

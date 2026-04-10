@@ -308,8 +308,6 @@ public class MenuPhanHeB {
 
         	// 2. Sửa vòng lặp in dữ liệu
         	for (String[] row : bangDiem) {
-        	    // Chỉ in 4 cột: row[0], row[1], row[2], row[3]
-        	    // KHÔNG ĐƯỢC để row[4] ở đây vì mảng bây giờ chỉ dài 4
         	    System.out.println(String.format("%-10s | %-30s | %-10s | %-5s", 
         	        row[0], row[1], row[2], row[3]));
         	}
