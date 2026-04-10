@@ -20,7 +20,7 @@ public class DangKyDAO {
 
         try {
             conn = MySQLConnect.getConnection();
-            
+
             // Cú pháp gọi Procedure có tham số OUT: {call ten_thu_tuc(?, ?, ?, ?, ?)}
             String sql = "{call NhapDiemThi(?, ?, ?, ?, ?)}";
             cStmt = conn.prepareCall(sql);
@@ -44,16 +44,18 @@ public class DangKyDAO {
             System.out.println("Lỗi khi gọi Procedure nhập điểm: " + ex.getMessage());
         } finally {
             try {
-                if (cStmt != null) cStmt.close();
-                if (conn != null) conn.close();
+                if (cStmt != null)
+                    cStmt.close();
+                if (conn != null)
+                    conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
         return ketQua;
     }
-    
-    //Hàm đăng ký nhiều môn học cho một học kỳ, niên khóa cụ thể
+
+    // Hàm đăng ký nhiều môn học cho một học kỳ, niên khóa cụ thể
     public boolean dangKyNhieuMon(String mssv, String maHK_NK, List<String> danhSachMaHP) {
         Connection conn = null;
         PreparedStatement pStmt = null;
@@ -61,9 +63,9 @@ public class DangKyDAO {
 
         try {
             conn = MySQLConnect.getConnection();
-            
+
             // Tắt tự động lưu (Bắt đầu Giao dịch)
-            conn.setAutoCommit(false); 
+            conn.setAutoCommit(false);
 
             // Chuẩn bị lệnh (Cột Diem tự động NULL do chưa thi)
             String sql = "INSERT INTO DANGKY (MSSV, MaHP, MaHK_NK, NgayDangKy) VALUES (?, ?, ?, CURDATE())";
@@ -72,14 +74,14 @@ public class DangKyDAO {
             // Đưa từng môn học vào "Lô" (Batch)
             for (String maHP : danhSachMaHP) {
                 pStmt.setString(1, mssv.trim());
-                pStmt.setString(2, maHP.trim()); 
+                pStmt.setString(2, maHP.trim());
                 pStmt.setString(3, maHK_NK.trim());
-                
+
                 pStmt.addBatch(); // Thêm vào Lô
             }
 
             // Chạy toàn bộ Lô lệnh
-            pStmt.executeBatch(); 
+            pStmt.executeBatch();
 
             // Thành công -> Xác nhận lưu (Commit)
             conn.commit();
@@ -97,19 +99,22 @@ public class DangKyDAO {
                 e.printStackTrace();
             }
         } finally {
-            //Giải phóng tài nguyên
+            // Giải phóng tài nguyên
             try {
-                if (conn != null) conn.setAutoCommit(true);
-                if (pStmt != null) pStmt.close();
-                if (conn != null) conn.close();
+                if (conn != null)
+                    conn.setAutoCommit(true);
+                if (pStmt != null)
+                    pStmt.close();
+                if (conn != null)
+                    conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
         return isSuccess;
     }
-    
-    //Xóa học phần đã đăng ký
+
+    // Xóa học phần đã đăng ký
     public int xoaDangKyHocPhan(String mssv, String maHP, String maHK) {
         int ketQua = -1; // Mặc định là lỗi hệ thống
         Connection conn = null;
@@ -117,7 +122,7 @@ public class DangKyDAO {
 
         try {
             conn = util.MySQLConnect.getConnection();
-            
+
             // Gọi Stored Procedure (3 tham số IN, 1 tham số OUT)
             String sql = "{call sp_XoaDangKyHocPhan(?, ?, ?, ?)}";
             cStmt = conn.prepareCall(sql);
@@ -126,7 +131,7 @@ public class DangKyDAO {
             cStmt.setString(1, mssv);
             cStmt.setString(2, maHP);
             cStmt.setString(3, maHK);
-            
+
             // Đăng ký tham số nhận kết quả trả về
             cStmt.registerOutParameter(4, java.sql.Types.INTEGER);
 
@@ -140,96 +145,123 @@ public class DangKyDAO {
             System.out.println("Lỗi gọi thủ tục xóa học phần: " + ex.getMessage());
         } finally {
             try {
-                if (cStmt != null) cStmt.close();
-                if (conn != null) conn.close();
+                if (cStmt != null)
+                    cStmt.close();
+                if (conn != null)
+                    conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
-        
+
         return ketQua;
     }
-    
+
     public List<String[]> layBangDiemChiTiet(String mssv) {
-    List<String[]> danhSachDiem = new ArrayList<>();
-    Connection conn = null;
-    CallableStatement cStmt = null;
-    ResultSet rs = null;
+        List<String[]> danhSachDiem = new ArrayList<>(); // Thêm <> cho đúng chuẩn Generic
+        Connection conn = null;
+        CallableStatement cStmt = null;
+        ResultSet rs = null;
 
-    try {
-        conn = util.MySQLConnect.getConnection();
-        String sql = "{call sp_XemBangDiemChiTiet(?)}";
-        cStmt = conn.prepareCall(sql);
-        cStmt.setString(1, mssv);
-        
-        rs = cStmt.executeQuery();
-        while (rs.next()) {
-            String[] dong = new String[5];
-            dong[0] = rs.getString("MaHP");
-            dong[1] = rs.getString("TenHP");
-            dong[2] = rs.getString("SoTinChi");
-            dong[3] = rs.getString("MaHK_NK");
-            dong[4] = rs.getString("Diem") == null ? "Chưa có" : rs.getString("Diem");
-            danhSachDiem.add(dong);
+        try {
+            conn = MySQLConnect.getConnection();
+            String sql = "{call sp_XemBangDiemChiTiet(?)}";
+            cStmt = conn.prepareCall(sql);
+            cStmt.setString(1, mssv);
+            rs = cStmt.executeQuery();
+
+            while(rs.next()) {
+                // Bước 1: Giảm xuống 4 vì Procedure chỉ trả về 4 cột
+                String[] dong = new String[4]; 
+                
+                dong[0] = rs.getString("MaHP");
+                dong[1] = rs.getString("TenHP");
+                dong[2] = rs.getString("SoTinChi");
+                
+                // Bước 2: Bỏ MaHK_NK và lấy thẳng cột Diem vào vị trí số 3
+                dong[3] = rs.getString("Diem") == null ? "Chưa có" : rs.getString("Diem");
+                
+                danhSachDiem.add(dong);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            // Bước 3: Đừng quên đóng kết nối để tránh bị tràn bộ nhớ Database
+            try {
+                if (rs != null) rs.close();
+                if (cStmt != null) cStmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) { e.printStackTrace(); }
         }
-    } catch (SQLException ex) {
-        ex.printStackTrace();
-    } finally {
-        // Đóng kết nối (tương tự các hàm trước)
+        return danhSachDiem;
     }
-    return danhSachDiem;
-}
+
     public float tinhGPASinhVien(String mssv) {
-    float gpa = 0;
-    Connection conn = null;
-    CallableStatement cStmt = null;
+        float gpa = 0;
+        Connection conn = null;
+        CallableStatement cStmt = null;
 
-    try {
-        conn = util.MySQLConnect.getConnection();
-        String sql = "{? = call fn_TinhGPA(?)}";
-        cStmt = conn.prepareCall(sql);
+        try {
+            conn = util.MySQLConnect.getConnection();
+            String sql = "{? = call fn_TinhGPA(?)}";
+            cStmt = conn.prepareCall(sql);
 
-        // Đăng ký tham số trả về (Vị trí số 1)
-        cStmt.registerOutParameter(1, java.sql.Types.FLOAT);
-        // Truyền tham số đầu vào MSSV (Vị trí số 2)
-        cStmt.setString(2, mssv);
+            // Đăng ký tham số trả về (Vị trí số 1)
+            cStmt.registerOutParameter(1, java.sql.Types.FLOAT);
+            // Truyền tham số đầu vào MSSV (Vị trí số 2)
+            cStmt.setString(2, mssv);
 
-        cStmt.execute();
-        gpa = cStmt.getFloat(1);
+            cStmt.execute();
+            gpa = cStmt.getFloat(1);
 
-    } catch (SQLException ex) {
-        System.out.println("Lỗi JDBC Tính GPA: " + ex.getMessage());
-    } finally {
-        // Đóng kết nối như bình thường
-    }
-    return gpa;
-}
-    public List<String[]> locSinhVienTheoHocLuc(String loai) {
-    List<String[]> danhSach = new ArrayList<>();
-    Connection conn = null;
-    CallableStatement cStmt = null;
-    ResultSet rs = null;
-
-    try {
-        conn = util.MySQLConnect.getConnection();
-        String sql = "{call sp_LocSinhVienTheoHocLuc(?)}";
-        cStmt = conn.prepareCall(sql);
-        cStmt.setString(1, loai);
-        
-        rs = cStmt.executeQuery();
-        while (rs.next()) {
-            String[] sv = new String[4];
-            sv[0] = rs.getString("MSSV");
-            sv[1] = rs.getString("HoTen");
-            sv[2] = rs.getString("MaKhoa");
-            sv[3] = String.format("%.2f", rs.getFloat("GPA"));
-            danhSach.add(sv);
+        } catch (SQLException ex) {
+            System.out.println("Lỗi JDBC Tính GPA: " + ex.getMessage());
+        } finally {
+            try {
+                if (cStmt != null)
+                    cStmt.close();
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-    } catch (SQLException ex) {
-        ex.printStackTrace();
-    } finally {
-        // Đóng kết nối
+        return gpa;
     }
-    return danhSach;
-}
+
+    public List<String[]> locSinhVienTheoHocLuc(String loai) {
+        List<String[]> danhSach = new ArrayList<>();
+        Connection conn = null;
+        CallableStatement cStmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = util.MySQLConnect.getConnection();
+            String sql = "{call sp_LocSinhVienTheoHocLuc(?)}";
+            cStmt = conn.prepareCall(sql);
+            cStmt.setString(1, loai);
+
+            rs = cStmt.executeQuery();
+            while (rs.next()) {
+                String[] sv = new String[4];
+                sv[0] = rs.getString("MSSV");
+                sv[1] = rs.getString("HoTen");
+                sv[2] = rs.getString("MaKhoa");
+                sv[3] = String.format("%.2f", rs.getFloat("GPA"));
+                danhSach.add(sv);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            try {
+                if (cStmt != null)
+                    cStmt.close();
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return danhSach;
+    }
 }

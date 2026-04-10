@@ -299,17 +299,21 @@ public class MenuPhanHeB {
         if (bangDiem.isEmpty()) {
             System.out.println(">> Thông báo: Sinh viên này chưa đăng ký học phần nào hoặc không tồn tại.");
         } else {
-            System.out.println("\nBẢNG ĐIỂM CỦA SINH VIÊN: " + mssv);
-            System.out.println("-------------------------------------------------------------------------------");
-            System.out.println(String.format("%-10s | %-30s | %-5s | %-10s | %-5s", 
-                "Mã HP", "Tên Học Phần", "STC", "Học Kỳ", "Điểm"));
-            System.out.println("-------------------------------------------------------------------------------");
-            
-            for (String[] row : bangDiem) {
-                System.out.println(String.format("%-10s | %-30s | %-5s | %-10s | %-5s", 
-                    row[0], row[1], row[2], row[3], row[4]));
-            }
-            System.out.println("-------------------------------------------------------------------------------");
+        	// 1. Sửa lại tiêu đề bảng cho khớp (Bỏ cột Học kỳ)
+        	System.out.println("\nBẢNG ĐIỂM CỦA SINH VIÊN: " + mssv);
+        	System.out.println("----------------------------------------------------------------------");
+        	System.out.println(String.format("%-10s | %-30s | %-10s | %-5s", 
+        	    "Mã HP", "Tên Học Phần", "Tín chỉ", "Điểm"));
+        	System.out.println("----------------------------------------------------------------------");
+
+        	// 2. Sửa vòng lặp in dữ liệu
+        	for (String[] row : bangDiem) {
+        	    // Chỉ in 4 cột: row[0], row[1], row[2], row[3]
+        	    // KHÔNG ĐƯỢC để row[4] ở đây vì mảng bây giờ chỉ dài 4
+        	    System.out.println(String.format("%-10s | %-30s | %-10s | %-5s", 
+        	        row[0], row[1], row[2], row[3]));
+        	}
+        	System.out.println("----------------------------------------------------------------------");
         }
     }
     // ham xu ly xu ly tinh GPA
